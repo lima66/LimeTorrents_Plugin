@@ -1,6 +1,5 @@
 #VERSION: 3.01
-#AUTHORS: Douman (custparasite@gmx.se)
-#CONTRIBUTORS: Diego de las Heras (ngosang@hotmail.es)
+#AUTHORS: Lima66
 
 from novaprinter import prettyPrinter
 from helpers import retrieve_url, download_file
