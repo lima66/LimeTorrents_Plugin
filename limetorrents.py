@@ -1,11 +1,16 @@
-#VERSION: 3.00
-#AUTHORS: Douman (custparasite@gmx.se)
-#CONTRIBUTORS: Diego de las Heras (ngosang@hotmail.es)
+#VERSION: 3.02
+#AUTHORS: Lima66
+
+try:
+    # python3
+    from html.parser import HTMLParser
+except ImportError:
+    # python2
+    from HTMLParser import HTMLParser
 
 from novaprinter import prettyPrinter
 from helpers import retrieve_url, download_file
 from re import compile as re_compile
-from html.parser import HTMLParser
 
 class limetorrents(object):
     url = "https://www.limetorrents.cc"
