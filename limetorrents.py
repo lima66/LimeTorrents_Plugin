@@ -1,4 +1,4 @@
-#VERSION: 3.02
+#VERSION: 3.05
 #AUTHORS: Lima66
 
 try:
