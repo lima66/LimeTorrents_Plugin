@@ -1,4 +1,4 @@
-#VERSION: 3.05
+#VERSION: 3.06
 #AUTHORS: Lima66
 
 try:
@@ -35,6 +35,7 @@ class limetorrents(object):
             self.current_item = None #dict for found item
             self.item_name = None #key's name in current_item dict
             self.counter = 0
+            self.page_empty = 14200
             self.final_list = None
             self.table_found = False #table of torrent
             self.parser_class = {"tdnormal": "size",  # class
@@ -48,16 +49,18 @@ class limetorrents(object):
                     if "class" in params:
                         self.item_name = self.parser_class.get(params["class"], None)
                         if self.item_name:
-                            self.current_item[self.item_name] = ""
+                            self.current_item[self.item_name] = -1
 
             if self.table_found and tag == "a":
                 if "href" in params:
                     link = params["href"]
                     if link.startswith("http://itorrents.org/torrent/"):
-                        self.current_item["desc_link"] = link.split('=')[1]
+                        #self.current_item["desc_link"] = link.split('=')[1]
                         self.current_item["link"] = link
                         self.current_item["engine_url"] = self.url
                         self.item_name = "name"
+                    elif link.endswith(".html"):
+                        self.current_item["desc_link"] = self.url + link
 
             if params.get('class') == "table2":
                 self.table_found = True
@@ -87,14 +90,16 @@ class limetorrents(object):
         query = query.replace("%20", "-")
 
         parser = self.MyHtmlParser(self.url)
-        page = "".join((self.url, "/search/", self.supported_categories[cat], "/", query, "/"))
-
-        html = retrieve_url(page)
-        parser.feed(html)
-
-        additional_pages = re_compile("/search/{0}/{1}/date/[0-9]+".format(self.supported_categories[cat], query))
-        list_searches = additional_pages.findall(html)[:-1] #last link is next(i.e. second)
-        for page in map(lambda link: "".join((self.url, link)), list_searches):
+        i = 1
+        while i < 21:
+            page = "{0}/search/{1}/{2}/seeds/{3}".format(self.url, self.supported_categories[cat], query, i)
             html = retrieve_url(page)
+            lunghezza_html = len(html)
+            if lunghezza_html <= parser.page_empty :
+                return
             parser.feed(html)
+            i += 1
         parser.close()
+
+
+
