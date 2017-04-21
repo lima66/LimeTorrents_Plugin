@@ -69,7 +69,7 @@ class limetorrents(object):
 
         def handle_data(self, data):
             if self.item_name:
-                self.current_item[self.item_name] = data
+                self.current_item[self.item_name] = data.strip().replace(',', '')
                 if self.item_name == "leech":
                     if self.current_item:
                         self.final_list.insert(self.counter, self.current_item)
