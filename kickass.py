@@ -18,7 +18,7 @@ class kickass(object):
     name = "KickAss"
 
     all = [0]
-    movies = [69, 71, 74, 75, 78, 79, 80, 81, 128, 148, 149, 150]
+    movies = [74, 149, 71, 80, 78, 79, 75, 81, 128, 148, 69, 150]
     tv = [5, 6, 41, 7, 146, 151, 152]
     music = [22, 23, 64, 65, 66, 67, 68, 129]
     books = [102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 132]
@@ -95,6 +95,11 @@ class kickass(object):
         def handle_endtag(self, tag):
             if self.inside_tr and tag == self.TR:
                 self.inside_tr = False
+                self.item_name = None
+                self.find_data = False
+                array_length = len(self.current_item)
+                if array_length < 1:
+                    return
                 prettyPrinter(self.current_item)
                 self.current_item = {}
 
@@ -119,8 +124,6 @@ class kickass(object):
                     break
 
                 parser.feed(html)
-                parser.close()
-
                 number_page += 1
 
-
+        parser.close()
