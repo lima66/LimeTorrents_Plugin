@@ -2,135 +2,125 @@
 #AUTHORS:lima66
 
 
-"""try:
+try:
     # python3
     from html.parser import HTMLParser
 except ImportError:
-   # python2
-    from HTMLParser import HTMLParser"""
-from html.parser import HTMLParser
+    # python2
+    from HTMLParser import HTMLParser
+
 from novaprinter import prettyPrinter
 from helpers import retrieve_url, download_file
-from re import compile as re_compile
+
 
 class kickass(object):
-    url = "https://kickass.cd"
+    url = "https://katcr.co"
     name = "KickAss"
-    supported_categories = {'all': 'all',
-                            'movies': 'movies',
-                            'tv': 'tv',
-                            'music': 'music',
-                            'books': 'books',
-                            'games': 'games',
-                            'software': 'applications'}
 
+    all = [0]
+    movies = [69, 71, 74, 75, 78, 79, 80, 81, 128, 148, 149, 150]
+    tv = [5, 6, 41, 7, 146, 151, 152]
+    music = [22, 23, 64, 65, 66, 67, 68, 129]
+    books = [102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 132]
+    games = [85, 87, 90, 91, 92, 97, 130]
+    applications = [139, 140, 142, 144, 131]
+    anime = [118, 133]
+    others = [134, 136, 138, 145, 153, 154]
+
+    supported_categories = {'all': all,
+                            'movies': movies,
+                            'tv': tv,
+                            'music': music,
+                            'books': books,
+                            'games': games,
+                            'software': applications,
+                            'anime': anime,
+                            'others': others}
 
     def download_torrent(self, info):
         print(download_file(info))
 
     class MyHtmlParser(HTMLParser):
         """ Sub-class for parsing results """
+        A, TD, TR = ('a', 'td', 'tr')
+
         def __init__(self, url):
             HTMLParser.__init__(self)
             self.url = url
-            self.current_item = None #dict for found item
-            self.item_name = None #key's name in current_item dict
+            self.current_item = {}  # dict for found item
+            self.item_name = None  # key's name in current_item dict
+            self.page_empty = 22000
+            self.inside_tr = False
             self.find_data = False
-            self.counter = 0
-            self.final_list = None
-            self.table_found = False #table of torrent
-            self. page_empty = 8856
-            self.parser_class = {"nobr center": "size",  # class
-                                 "green center": "seeds",
-                                 "red lasttd center": "leech"}
+            self.parser_class = {"ttable_col2": "size",  # class
+                                 "green": "seeds",
+                                 "#ff0000": "leech"}
 
         def handle_starttag(self, tag, attrs):
-            if tag == "table":
-                print("table")
             params = dict(attrs)
-            if self.table_found:
-                if tag == "td":
-                    if "class" in params:
-                        self.item_name = self.parser_class.get(params["class"], "")
-                        if self.item_name:
-                            self.find_data = True
+            self.inside_tr = (self.inside_tr or tag == self.TR) and not params.get('class') == "ttable_head"
+            if not self.inside_tr:
+                return
 
-            if self.table_found and tag == "a":
-                if "href" in params:
-                    link = params["href"]
-                    if link.startswith("magnet:?"):
-                        self.current_item["link"] = link
-                        self.current_item["engine_url"] = self.url
-                    elif link.endswith(".html"):
-                        self.current_item["desc_link"] = self.url + link
-                        self.item_name = "name"
-                        self.find_data = True
+            if self.inside_tr and (tag == self.TD or tag == 'font'):
+                if "class" in params:
+                    self.item_name = self.parser_class.get(params["class"], None)
+                elif "color" in params:
+                    self.item_name = self.parser_class.get(params["color"], None)
 
-            if params.get('class') == "data":
-                self.table_found = True
+                if self.item_name:
+                    self.find_data = True
+
+            if "href" in params and params.get('class') == 'cellMainLink':
+                link = params["href"]
+                if tag == self.A and link.startswith('torrents-details.php'):
+                    self.current_item["desc_link"] = "".join((self.url, "/new/", link))
+                    self.current_item["engine_url"] = self.url
+                    self.item_name = "name"
+                    self.find_data = True
+
+            elif "href" in params and params.get('title') == 'Download torrent file':
+                link = params["href"]
+                if tag == self.A and link.startswith('download.php?'):
+                    self.current_item["link"] = "".join((self.url, "/new/", link))
+
+            if tag == "tr" and params.get('class') == "t-row":
                 self.current_item = {}
-                self.final_list = []
 
         def handle_data(self, data):
-            if self.item_name and self.find_data:
+            if self.inside_tr and self.item_name and self.find_data:
                 self.find_data = False
-                self.current_item[self.item_name] = data.strip()
-
-                if self.item_name == "leech":
-                    if self.current_item:
-                        self.final_list.insert(self.counter, self.current_item)
-                        self.current_item = {}
-                        self.counter += 1
+                self.current_item[self.item_name] = data.strip().replace(',', '')
 
         def handle_endtag(self, tag):
-                if self.table_found and tag == "table":
-                    self.table_found = False
-                    self.item_name = None
-                    for items in self.final_list:
-                        prettyPrinter(items)
-                    self.current_item = {}
-                    self.final_list = []
-                    self.counter = 0
+            if self.inside_tr and tag == self.TR:
+                self.inside_tr = False
+                prettyPrinter(self.current_item)
+                self.current_item = {}
 
     def search(self, query, cat='all'):
         """ Performs search """
-        #query = query.replace("%20", "%20")
-
         parser = self.MyHtmlParser(self.url)
 
-        if cat == "all":
-            #first page
-            page = "".join((self.url, "/usearch/", query, "/"))
-            html = retrieve_url(page)
-            parser.feed(html)
+        query = query.replace("%20", "+")
+        """https://katcr.co/new/torrents-search.php?cat=71&search=john&sort=seeders&order=desc&page=0"""
 
-            #Search more pages
-            i = 2
-            while i < 18:
-                page = "{0}/usearch/{1}/{2}/".format(self.url, query, i)
+        array_category = self.supported_categories[cat]
+
+        for category in array_category:
+            number_page = 0
+            while number_page < 15:
+                page = "".join((self.url, "/new/torrents-search.php?cat={0}"
+                                          "&search={1}&sort=seeders&order=desc&page={2}")).format(category, query,
+                                                                                                  number_page)
                 html = retrieve_url(page)
-                lunghezza_html = len(html)
-                if lunghezza_html <= parser.page_empty:
-                   return
+                length_html = len(html)
+                if length_html <= parser.page_empty:
+                    break
 
                 parser.feed(html)
-                i += 1
-        else:
-            # first page
-            page = "".join((self.url, "/usearch/", query, "/"))
-            html = retrieve_url(page)
-            parser.feed(html)
+                parser.close()
 
-            # Search more pages
-            i = 1
-            while i < 18:
-                page = "{0}/usearch/{1}%20category:{2}/{3}/".format(self.url, query, self.supported_categories[cat], i)
-                html = retrieve_url(page)
-                lunghezza_html = len(html)
-                if lunghezza_html <= parser.page_empty:
-                    return
+                number_page += 1
 
-                parser.feed(html)
-                i += 1
 
-        parser.close()
