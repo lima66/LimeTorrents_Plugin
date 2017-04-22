@@ -1,3 +1,3 @@
 # Torrents_Plugin
 
-plugin for qBittorrent 
+plugins for qBittorrent 
