@@ -1,3 +1,3 @@
-# LimeTorrents_Plugin
+# Torrents_Plugin
 
-First plugin. 
+plugin for qBittorrent 
