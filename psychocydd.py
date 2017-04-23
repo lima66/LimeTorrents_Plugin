@@ -1,4 +1,4 @@
-#VERSION: 1.00
+#VERSION: 1.01
 #AUTHORS:lima66
 
 try:
@@ -14,7 +14,7 @@ from helpers import retrieve_url, download_file
 
 class psychocydd(object):
     url = "http://psychocydd.co.uk/"
-    name = "psychocydd"
+    name = "RockBox"
     supported_categories = {'all': 'all',
                             'music': 'music',
                             'others': 'others'}
@@ -37,9 +37,8 @@ class psychocydd(object):
             self.check_size = False
             self.name_Torrent = ""
             self.end_name = False
-            self.parser_class = {"green": "seeds",
-                                 "yellow": "seeds",  # class
-                                 "red": "leech"}
+            self.seed_found = False
+            self.leech_found = False
 
         def handle_starttag(self, tag, attrs):
             params = dict(attrs)
@@ -51,13 +50,6 @@ class psychocydd(object):
                     self.current_item = {}
             if not self.inside_tr:
                 return
-
-            if self.inside_tr and tag == self.TD and not self.check_size:
-                if "class" in params:
-                    self.item_name = self.parser_class.get(params["class"], None)
-                    if self.item_name:
-                        self.find_data = True
-                        self.current_item[self.item_name] = " "
 
             if "href" in params:
                 link = params["href"]
@@ -72,6 +64,16 @@ class psychocydd(object):
                     self.item_name = "size"
                     self.find_data = True
                     self.check_size = True
+
+                elif link.startswith('peers.php?'):
+                    if not self.seed_found:
+                        self.seed_found = True
+                        self.item_name = "seeds"
+                        self.find_data = True
+                    elif self.seed_found and not self.leech_found:
+                        self.leech_found = True
+                        self.item_name = "leech"
+                        self.find_data = True
 
         def handle_data(self, data):
             if self.inside_tr and self.item_name and self.find_data and not self.check_size:
@@ -103,6 +105,8 @@ class psychocydd(object):
                 self.inside_tr = False
                 self.item_name = None
                 self.find_data = False
+                self.seed_found = False
+                self.leech_found = False
                 array_length = len(self.current_item)
                 if array_length < 1:
                     return
@@ -121,7 +125,7 @@ class psychocydd(object):
         # http://psychocydd.co.uk/torrents.php?active=1&search=the+theory&&options=0&order=seeds&by=DESC&page=0
         number_page = 0
         while True:
-            page = "".join((self.url, '/torrents.php?active=1&search={0}&&options=0&order=seeds&by=DESC&page={1}')).format(query, number_page)
+            page = "".join((self.url, '/torrents.php?active=1&search={0}&&options=1&order=seeds&by=DESC&page={1}')).format(query, number_page)
             html = retrieve_url(page)
             length_html = len(html)
             if length_html <= parser.page_empty:
