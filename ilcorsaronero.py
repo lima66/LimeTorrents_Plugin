@@ -118,6 +118,7 @@ class ilcorsaronero(object):
 
         """http://ilcorsaronero.info/advsearch.php?categoty=19&search=2017+md&&order=data&by=DESC&page=1"""
         """http://ilcorsaronero.info/torrent-ita/2/2016%20%20mina.html"""
+        """http://ilcorsaronero.info/advsearch.php?&category=1&search=2016+bdrip&&order=data&by=DESC&page=1"""
         if cat == 'all':
             query = query.replace("%20", "+")
             number_page = 0
@@ -135,10 +136,10 @@ class ilcorsaronero(object):
             for category in array_category:
                 number_page = 0
                 while number_page < 15:
-                    page = "".join((self.url, "/torrent-ita/{0}/{1}.html")).format(category, query, number_page)
+                    page = "".join((self.url, "/advsearch.php?&category={0}&search={1}&&order=data&by=DESC&page={2}")).format(category, query, number_page)
                     html = retrieve_url(page)
                     length_html = len(html)
-                    if length_html <= parser.page_empty:
+                    if length_html <= 14500:
                         break
 
                     parser.feed(html)
