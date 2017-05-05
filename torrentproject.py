@@ -16,7 +16,7 @@ import re
 DOWNLOAD_PATTERN = r'<a .* href=\'/(.*)\'>Download Torrent from torrentproject\.se</a>'
 
 class torrentproject(object):
-    url = "http://torrentproject.se"
+    url = "https://torrentproject.se"
     name = "TorrentProject"
 
     supported_categories = {'all': '9000',
