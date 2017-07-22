@@ -1,4 +1,4 @@
-#VERSION: 3.08
+#VERSION: 3.09
 #AUTHORS: Lima66
 
 try:
@@ -21,8 +21,7 @@ class limetorrents(object):
                             'games': 'games',
                             'movies': 'movies',
                             'music': 'music',
-                            'tv': 'tv',
-                            'other': 'other'}
+                            'tv': 'tv'}
 
     def download_torrent(self, info):
         print(download_file(info))
