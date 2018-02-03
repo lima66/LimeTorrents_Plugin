@@ -16,7 +16,7 @@ import re
 DOWNLOAD_PATTERN = r'<a href="https://torrent.isohunt.to/download.php?(.*)" class="btn btn-lg btn-warning btn-download" (.*)>'
 
 class isohunt(object):
-    url = "https://isohunt.to"
+    url = "https://isohunts.to"
     name = "IsoHunt"
 
     supported_categories = {'all': '0',
