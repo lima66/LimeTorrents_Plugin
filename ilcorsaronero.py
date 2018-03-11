@@ -14,7 +14,7 @@ from helpers import retrieve_url, download_file
 
 
 class ilcorsaronero(object):
-    url = "http://ilcorsaronero.info"
+    url = "https://ilcorsaronero.info"
     name = "IlCorsaroNero"
 
     movies = [19, 1, 20]
